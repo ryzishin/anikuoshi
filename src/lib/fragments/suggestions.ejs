@@ -1,0 +1,32 @@
+<%# AniKuoshi EJS fragment: search suggestions (consumed by htmx swap) %>
+<%# FIX (v1.1): link keys must be resolvable by the API (anilist:<id> | <title>). %>
+<%# FIX (v1.3.0 — §1): title-based routing is GONE — nav order is now       %>
+<%# canonical id key → listing slug → title only as a last resort, exactly %>
+<%# matching itemKey() on the client. Colons are stripped from title-shaped %>
+<%# fallbacks (the API's key parser rejects them).                          %>
+<% suggestions.forEach(function (s) { %>
+<%
+  var slugPart = String(s.slug || '').replace(/\/+$/,'').replace(/\/ep-\d+.*$/i, '');
+  var canonical = /^(anilist|mal):\d+$/.test(String(s.key || '')) ? String(s.key) : '';
+  var titlePart = String(s.title || '').replace(/\s*:\s*/g, ' ').replace(/\s{2,}/g, ' ').trim();
+  var navKey = canonical || slugPart || titlePart;
+%>
+<a
+  class="suggestion-item flex items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-accent/70"
+  href="/anime/<%= encodeURIComponent(navKey) %>"
+  tabindex="0"
+>
+  <% if (s.poster) { %>
+  <img src="<%= s.poster %>" alt="" loading="lazy" class="h-11 w-8 rounded object-cover" />
+  <% } else { %>
+  <div class="flex h-11 w-8 items-center justify-center rounded bg-primary text-[10px] font-bold text-primary-foreground">?</div>
+  <% } %>
+  <span class="min-w-0 flex-1">
+    <span class="block truncate text-[13px] font-medium text-popover-foreground"><%= s.title %></span>
+    <span class="block text-[11px] text-muted-foreground"><%= s.type || 'Anime' %></span>
+  </span>
+</a>
+<% }); %>
+<% if (!suggestions.length) { %>
+<p class="px-3 py-3 text-xs text-muted-foreground">No matches — press Enter for full search.</p>
+<% } %>
