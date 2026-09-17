@@ -1,0 +1,30 @@
+<%# AniKuoshi EJS fragment: search suggestions (consumed by htmx swap) %>
+<%# FIX (v1.1): link keys must be resolvable by the API (anilist:<id> | <title>). %>
+<%# FIX (v1.2.0 — §5): v2.3.0 rows carry a `key`; when it is already a        %>
+<%# canonical id (anilist:/mal:) link it directly — exact identity, zero      %>
+<%# resolution latency on the details page. Title-first stays for key-less.   %>
+<% suggestions.forEach(function (s) { %>
+<%
+  var slugPart = String(s.slug || '').replace(/\/ep-\d+.*$/i, '');
+  var canonical = /^(anilist|mal):\d+$/.test(String(s.key || '')) ? String(s.key) : '';
+  var navKey = canonical || String(s.title || '').trim() || slugPart;
+%>
+<a
+  class="suggestion-item flex items-center gap-3 rounded-lg px-2.5 py-2 transition-colors hover:bg-accent/70"
+  href="/anime/<%= encodeURIComponent(navKey) %>"
+  tabindex="0"
+>
+  <% if (s.poster) { %>
+  <img src="<%= s.poster %>" alt="" loading="lazy" class="h-11 w-8 rounded object-cover" />
+  <% } else { %>
+  <div class="brand-gradient flex h-11 w-8 items-center justify-center rounded text-[10px] font-bold text-white">?</div>
+  <% } %>
+  <span class="min-w-0 flex-1">
+    <span class="block truncate text-[13px] font-medium text-popover-foreground"><%= s.title %></span>
+    <span class="block text-[11px] text-muted-foreground"><%= s.type || 'Anime' %></span>
+  </span>
+</a>
+<% }); %>
+<% if (!suggestions.length) { %>
+<p class="px-3 py-3 text-xs text-muted-foreground">No matches — press Enter for full search.</p>
+<% } %>
